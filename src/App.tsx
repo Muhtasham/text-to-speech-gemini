@@ -20,6 +20,7 @@ import { LiveAPIProvider } from "./contexts/LiveAPIContext";
 import SidePanel from "./components/side-panel/SidePanel";
 import { Altair } from "./components/altair/Altair";
 import ControlTray from "./components/control-tray/ControlTray";
+import TextToSpeech from "./components/text-to-speech/TextToSpeech";
 import cn from "classnames";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
@@ -44,7 +45,7 @@ function App() {
           <SidePanel />
           <main>
             <div className="main-app-area">
-              {/* APP goes here */}
+              <TextToSpeech />
               <Altair />
               <video
                 className={cn("stream", {

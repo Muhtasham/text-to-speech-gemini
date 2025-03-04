@@ -1,126 +1,79 @@
-# Multimodal Live API - Web console
+# Text-to-Speech Implementation using Multimodal Live API
 
-This repository contains a react-based starter app for using the [Multimodal Live API](<[https://ai.google.dev/gemini-api](https://ai.google.dev/api/multimodal-live)>) over a websocket. It provides modules for streaming audio playback, recording user media such as from a microphone, webcam or screen capture as well as a unified log view to aid in development of your application.
+This project extends the [Multimodal Live API Web Console](https://github.com/google-gemini/multimodal-live-api-web-console) to implement text-to-speech functionality using Gemini's audio capabilities. The implementation is primarily in `src/components/text-to-speech/TextToSpeech.tsx`.
 
-[![Multimodal Live API Demo](readme/thumbnail.png)](https://www.youtube.com/watch?v=J_q7JY1XxFE)
+## Features
 
-Watch the demo of the Multimodal Live API [here](https://www.youtube.com/watch?v=J_q7JY1XxFE).
+- **Text-to-Speech Conversion**: Convert any text to natural-sounding speech
+- **Multiple Voice Options**: Choose from different voices:
+  - Puck
+  - Charon
+  - Kore
+  - Fenrir
+  - Aoede
+- **Customizable Prompts**: Modify how the AI processes your text
+- **Real-time Audio Streaming**: Hear the speech as it's being generated
+- **Audio Download**: Save generated speech as WAV files
+- **Error Handling**: Robust error handling with retry mechanisms
 
-## Usage
+## Quick Start
 
-To get started, [create a free Gemini API key](https://aistudio.google.com/apikey) and add it to the `.env` file. Then:
+1. Get your [Gemini API key](https://aistudio.google.com/apikey)
+2. Set up the project:
+```bash
+# Clone the repository
+git clone https://github.com/Muhtasham/text-to-speech-gemini.git
+cd text-to-speech-gemini
 
+# Install dependencies
+npm install
+
+# Create .env file and add your API key
+echo "GEMINI_API_KEY=your_api_key_here" > .env
+
+# Start the development server
+npm start
 ```
-$ npm install && npm start
-```
 
-We have provided several example applications on other branches of this repository:
+## Using the Text-to-Speech Component
 
-- [demos/GenExplainer](https://github.com/google-gemini/multimodal-live-api-web-console/tree/demos/genexplainer)
-- [demos/GenWeather](https://github.com/google-gemini/multimodal-live-api-web-console/tree/demos/genweather)
-- [demos/GenList](https://github.com/google-gemini/multimodal-live-api-web-console/tree/demos/genlist)
+1. Open http://localhost:3000 in your browser
+2. Click "Show Settings" to access:
+   - Voice selection dropdown
+   - Custom prompt configuration
+3. Enter your text in the main textarea
+4. Click "Speak" to generate and play the audio
+5. Use "Download Audio" to save as WAV file
 
-## Example
+## Implementation Details
 
-Below is an example of an entire application that will use Google Search grounding and then render graphs using [vega-embed](https://github.com/vega/vega-embed):
+The text-to-speech functionality is implemented in `TextToSpeech.tsx` with these key features:
 
 ```typescript
-import { type FunctionDeclaration, SchemaType } from "@google/generative-ai";
-import { useEffect, useRef, useState, memo } from "react";
-import vegaEmbed from "vega-embed";
-import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
-
-export const declaration: FunctionDeclaration = {
-  name: "render_altair",
-  description: "Displays an altair graph in json format.",
-  parameters: {
-    type: SchemaType.OBJECT,
-    properties: {
-      json_graph: {
-        type: SchemaType.STRING,
-        description:
-          "JSON STRING representation of the graph to render. Must be a string, not a json object",
-      },
-    },
-    required: ["json_graph"],
-  },
-};
-
-export function Altair() {
-  const [jsonString, setJSONString] = useState<string>("");
-  const { client, setConfig } = useLiveAPIContext();
-
-  useEffect(() => {
-    setConfig({
-      model: "models/gemini-2.0-flash-exp",
-      systemInstruction: {
-        parts: [
-          {
-            text: 'You are my helpful assistant. Any time I ask you for a graph call the "render_altair" function I have provided you. Dont ask for additional information just make your best judgement.',
-          },
-        ],
-      },
-      tools: [{ googleSearch: {} }, { functionDeclarations: [declaration] }],
-    });
-  }, [setConfig]);
-
-  useEffect(() => {
-    const onToolCall = (toolCall: ToolCall) => {
-      console.log(`got toolcall`, toolCall);
-      const fc = toolCall.functionCalls.find(
-        (fc) => fc.name === declaration.name
-      );
-      if (fc) {
-        const str = (fc.args as any).json_graph;
-        setJSONString(str);
-      }
-    };
-    client.on("toolcall", onToolCall);
-    return () => {
-      client.off("toolcall", onToolCall);
-    };
-  }, [client]);
-
-  const embedRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (embedRef.current && jsonString) {
-      vegaEmbed(embedRef.current, JSON.parse(jsonString));
-    }
-  }, [embedRef, jsonString]);
-  return <div className="vega-embed" ref={embedRef} />;
-}
+// Key components:
+- AudioStreamer for real-time audio playback
+- Voice selection from available options
+- Customizable prompts with default:
+  "Please convert this text to speech and recite it verbatim do not start with sure here it is etc:"
+- WAV file generation for downloads
 ```
 
-## development
+## Original Project Attribution
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-Project consists of:
+This project is based on the [Multimodal Live API Web Console](https://github.com/google-gemini/multimodal-live-api-web-console) by Google. The original project provides modules for streaming audio playback, recording user media, and a unified log view.
 
-- an Event-emitting websocket-client to ease communication between the websocket and the front-end
-- communication layer for processing audio in and out
-- a boilerplate view for starting to build your apps and view logs
+## Development
 
-## Available Scripts
+Built with:
+- React + TypeScript
+- Web Audio API
+- Gemini's Multimodal Live API
+- SCSS for styling
 
-In the project directory, you can run:
+## License
 
-### `npm start`
+This project maintains the original Apache License 2.0 from the base project.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+---
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-_This is an experiment showcasing the Multimodal Live API, not an official Google product. We'll do our best to support and maintain this experiment but your mileage may vary. We encourage open sourcing projects as a way of learning from each other. Please respect our and other creators' rights, including copyright and trademark rights when present, when sharing these works and creating derivative work. If you want more info on Google's policy, you can find that [here](https://developers.google.com/terms/site-policies)._
+_This is an extension of an experiment showcasing the Multimodal Live API, not an official Google product. The original disclaimer and terms apply. See [Google's policy](https://developers.google.com/terms/site-policies) for more information._
